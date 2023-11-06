@@ -1,0 +1,13 @@
+<!-- -->
+<launch>
+<group ns="vehicle">
+
+	<!-- rosrun vehicle_can_socket  -->
+    <node pkg="vehicle_can_socket" type="vehicle_receiver" name="vehicle_receiver" output="screen">
+	</node> 
+
+	<node pkg="vehicle_can_socket" type="vehicle_sender" name="vehicle_sender" output="screen">
+	</node>
+</group>
+
+</launch>

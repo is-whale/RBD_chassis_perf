@@ -1,0 +1,29 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "",
+        "limitSymbolsToIncludedHeaders": true
+      },
+      "includePath": [
+        "/home/tsy/teemo_ws/devel/include/**",
+        "/opt/ros/melodic/include/**",
+        "/home/tsy/teemo_ws/src/driver/lidar_gnss_merge/gnss/include/**",
+        "/home/tsy/teemo_ws/src/driver/gnss_ins/ins_driver/include/**",
+        "/home/tsy/teemo_ws/src/driver/lidar_gnss_merge/map_transformation/include/**",
+        "/home/tsy/teemo_ws/src/CAN/receiver/radar_decode/include/**",
+        "/home/tsy/teemo_ws/src/CAN/sender/vehicle/socketcan_bridge/include/**",
+        "/home/tsy/teemo_ws/src/CAN/sender/vehicle/socketcan_interface/include/**",
+        "/home/tsy/teemo_ws/src/driver/usb_cam/include/**",
+        "/home/tsy/teemo_ws/src/CAN/sender/vehicle/vehicle_can_socket/include/**",
+        "/home/tsy/teemo_ws/src/driver/velodyne/velodyne_driver/include/**",
+        "/home/tsy/teemo_ws/src/driver/velodyne/velodyne_laserscan/include/**",
+        "/home/tsy/teemo_ws/src/driver/velodyne/velodyne_pointcloud/include/**",
+        "/home/tsy/teemo_ws/src/driver/gnss_ins/wgs_conversions/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS"
+    }
+  ],
+  "version": 4
+}

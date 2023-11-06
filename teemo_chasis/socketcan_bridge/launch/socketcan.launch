@@ -1,0 +1,13 @@
+<!-- -->
+<launch>
+<group ns="vehicle">
+
+	<!-- rosrun socket_bridge  -->
+	<node pkg="socketcan_bridge" type="socketcan_to_topic_node" name="socketcan_to_topic_node" output="screen">
+	</node>
+
+	<node pkg="socketcan_bridge" type="topic_to_socketcan_node" name="topic_to_socketcan_node" output="log">
+	</node>
+</group>
+
+</launch>
