@@ -41,7 +41,7 @@ typedef  struct{
     bool light_brake;       //0 false, 1 true
 } wireControl_t;
 
-wireControl_t wc;
+wireControl_t wc;//<线控底盘结构体
 
 can_msgs::Frame canEncoding_IECU_Flag(wireControl_t *wcPtr)
 {
@@ -84,7 +84,9 @@ can_msgs::Frame canEncoding_Steer(wireControl_t *wcPtr)
 
     return  frame;
 }
-
+/**
+ * @brief send message for 0x504
+  */
 can_msgs::Frame canEncoding_Speed(wireControl_t *wcPtr)
 {
     can_msgs::Frame frame;
@@ -193,10 +195,10 @@ void ControlCmdCallback(const autoware_msgs::VehicleCmd& msg)
                          wc.steer_angle > 600 ? 600 : wc.steer_angle;
     
         if(msg.ctrl_cmd.linear_velocity >= 0){
-            wc.up_or_down = 1;
+            wc.up_or_down = 1;//on
         }
         else{
-            wc.up_or_down = 3;
+            wc.up_or_down = 3;//back
         }
 
         wc.speed =10 * mps2kmph(abs(msg.ctrl_cmd.linear_velocity));
@@ -224,13 +226,19 @@ void ControlCmdCallback(const autoware_msgs::VehicleCmd& msg)
     frame_3=canEncoding_Brake(&wc);
     frame_4=canEncoding_Light(&wc);
 
-    //add counter i => (0-F)
+    //add counter i => (0-F) 0000->1111 与心跳有关
     for(int i=0; i <= 15; i++){
         frame.data[0] |= (i << 4); frame.header = msg.header;
+        frame.header.stamp =  ros::Time::now();
         frame_1.data[0] |= (i << 4);frame_1.header = msg.header;
+        frame_1.header.stamp = ros::Time::now();
         frame_2.data[0] |= (i << 4);frame_2.header = msg.header;
+        frame_2.header.stamp = ros::Time::now();
         frame_3.data[0] |= (i << 4);frame_3.header = msg.header;
+        frame_3.header.stamp = ros::Time::now();
         frame_4.data[0] |= (i << 4);frame_4.header = msg.header;
+        frame_4.header.stamp = ros::Time::now();
+
 
         can_frame_pub.publish(frame);frame.data[0] = 1;
         can_frame_pub.publish(frame_1);frame_1.data[0] = 1;
