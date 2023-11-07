@@ -28,6 +28,8 @@
 #include <socketcan_bridge/topic_to_socketcan.h>
 #include <socketcan_interface/string.h>
 #include <string>
+#include <chrono>
+#include <ros/time.h>
 
 namespace socketcan_bridge
 {
@@ -36,6 +38,7 @@ TopicToSocketCAN::TopicToSocketCAN(ros::NodeHandle* nh, ros::NodeHandle* nh_para
 {
     can_topic_ = nh->subscribe<can_msgs::Frame>("sent_messages", 5,
                     boost::bind(&TopicToSocketCAN::msgCallback, this, _1));
+    
     driver_ = driver;
 }
 
@@ -50,6 +53,20 @@ void TopicToSocketCAN::msgCallback(const can_msgs::Frame::ConstPtr& msg)
     // translate it to the socketcan frame type.
     can_msgs::Frame m = *msg.get();     // ROS message
     can::Frame f;                       // socketcan type
+
+    // debug
+    // std::cout<<m.header.stamp.nsec << std::endl;
+    //debug end
+    std::chrono::nanoseconds ns(msg->header.stamp.nsec);
+    std::chrono::seconds s(msg->header.stamp.sec);
+    std::chrono::system_clock::time_point tp(s + ns);
+    // std::cout << "time point: " << tp.time_since_epoch().count() << std::endl;
+
+    std::chrono::nanoseconds nsec_tmp(ros::Time::now().nsec);
+    std::chrono::seconds sec_tmp(ros::Time::now().sec);
+    std::chrono::system_clock::time_point tp_new(nsec_tmp + sec_tmp);
+    std::chrono::duration<double> elapsed = tp_new - tp;
+    std::cout << "elapsed time: " << elapsed.count() << "s\n";
 
     // converts the can_msgs::Frame (ROS msg) to can::Frame (socketcan.h)
     convertMessageToSocketCAN(m, f);
