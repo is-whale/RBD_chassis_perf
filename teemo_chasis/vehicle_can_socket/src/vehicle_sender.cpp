@@ -15,8 +15,15 @@
 #include "can_id.h"
 #include "autoware_msgs/VehicleCmd.h"
 
+//quene for topic
+#include <queue>
+#include <mutex>
+
 using namespace std;
 static ros::Publisher can_frame_pub;
+
+
+void lock_topic(can_msgs::Frame can_tmp);
 
 double mps2kmph(double velocity_mps)
 {
@@ -150,6 +157,21 @@ can_msgs::Frame canEncoding_Light(wireControl_t *wcPtr)
     return  frame;
 }
 
+    //mutex start
+std::mutex mutex_for_topic;
+
+
+void lock_topic(can_msgs::Frame can_tmp){
+    mutex_for_topic.lock();
+    can_frame_pub.publish(can_tmp);
+        can_frame_pub.publish(can_tmp);
+        can_frame_pub.publish(can_tmp);
+        can_frame_pub.publish(can_tmp);
+        can_frame_pub.publish(can_tmp);
+    mutex_for_topic.unlock();
+}
+//mutex end
+
 void ControlCmdCallback(const autoware_msgs::VehicleCmd& msg)
 {
     can_msgs::Frame frame;
@@ -207,8 +229,8 @@ void ControlCmdCallback(const autoware_msgs::VehicleCmd& msg)
                    wc.speed > 150 ? 150 : wc.speed;
     }
   
-    cout<<"当前速度是: "<< msg.ctrl_cmd.linear_velocity <<"  m/s "<<endl;
-    cout<<"当前制动压力是: "<< wc.brake<<"  % "<<endl;
+    cout<<"当前速度是: "<< msg.ctrl_cmd.linear_velocity <<"  m/s ";
+    cout<<"当前制动压力是: "<< wc.brake<<"  % ";
     cout<<"当前转角是 "<< msg.ctrl_cmd.steering_angle*57.3 <<"  度 "<<endl;
 
     //转向灯控制
@@ -220,40 +242,53 @@ void ControlCmdCallback(const autoware_msgs::VehicleCmd& msg)
     }
 
     //发送CAN信号
-    frame=canEncoding_IECU_Flag(&wc);
-    frame_1=canEncoding_Speed(&wc);
-    frame_2=canEncoding_Steer(&wc);
-    frame_3=canEncoding_Brake(&wc);
-    frame_4=canEncoding_Light(&wc);
+    frame=canEncoding_IECU_Flag(&wc);   ///帧头为 0x501，IECU
+    frame_1=canEncoding_Speed(&wc);     ///帧头为 0x502. steer
+    frame_2=canEncoding_Steer(&wc);     ///帧头为 0x503. go
+    frame_3=canEncoding_Brake(&wc);     ///帧头为 0x504. all ctr
+    frame_4=canEncoding_Light(&wc);     ///帧头为 0x505. enable light
+
 
     //add counter i => (0-F) 0000->1111 与心跳有关
     for(int i=0; i <= 15; i++){
         frame.data[0] |= (i << 4); frame.header = msg.header;
-        frame.header.stamp =  ros::Time::now();
         frame_1.data[0] |= (i << 4);frame_1.header = msg.header;
-        frame_1.header.stamp = ros::Time::now();
         frame_2.data[0] |= (i << 4);frame_2.header = msg.header;
-        frame_2.header.stamp = ros::Time::now();
         frame_3.data[0] |= (i << 4);frame_3.header = msg.header;
-        frame_3.header.stamp = ros::Time::now();
         frame_4.data[0] |= (i << 4);frame_4.header = msg.header;
-        frame_4.header.stamp = ros::Time::now();
 
+        //沙比厂家的驱动问题就是这个循环
+        // frame.header.stamp =  ros::Time::now();
+        // frame_1.header.stamp = ros::Time::now();
+        // frame_2.header.stamp = ros::Time::now();
+        // frame_3.header.stamp = ros::Time::now();
+        // frame_4.header.stamp = ros::Time::now();
 
-        can_frame_pub.publish(frame);frame.data[0] = 1;
-        can_frame_pub.publish(frame_1);frame_1.data[0] = 1;
-        can_frame_pub.publish(frame_2);frame_2.data[0] = 1;
-        can_frame_pub.publish(frame_3);frame_3.data[0] = 1;
-        can_frame_pub.publish(frame_4);frame_4.data[0] &= 0x0f;
-        usleep(20000);
+        //延时放出来
+        // can_frame_pub.publish(frame);frame.data[0] = 1;
+        // can_frame_pub.publish(frame_1);frame_1.data[0] = 1;
+        // can_frame_pub.publish(frame_2);frame_2.data[0] = 1;
+        // can_frame_pub.publish(frame_3);frame_3.data[0] = 1;
+        // can_frame_pub.publish(frame_4);frame_4.data[0] &= 0x0f;
+        // usleep(2);
+        lock_topic(frame);frame.data[0] = 1;
+        lock_topic(frame_1);frame_1.data[0] = 1;
+        lock_topic(frame_2);frame_2.data[0] = 1;
+        lock_topic(frame_3);frame_3.data[0] = 1;
+        lock_topic(frame_4);frame_4.data[0] &= 0x0f;
     }     
 }
+
 
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "vehicle_sender");
     ros::NodeHandle nh;
     can_frame_pub = nh.advertise<can_msgs::Frame>("sent_messages", 10);
+
+    //test sub
+    // ros::Time test_sub = ros::Time::now();
+
     ros::Subscriber control_cmd_sub = nh.subscribe("/vehicle_cmd", 10, ControlCmdCallback);
 
     ros::spin();
