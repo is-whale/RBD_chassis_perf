@@ -50,6 +50,9 @@ private:
     void stateCallback(const can::State & s);
 };
 
+    /**
+     * @brief converts the can_msgs::Frame (ROS msg) to can::Frame (socketcan.h) 
+      */
 void convertMessageToSocketCAN(const can_msgs::Frame& m, can::Frame& f)
 {
     f.id = m.id;

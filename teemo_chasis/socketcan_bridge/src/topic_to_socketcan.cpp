@@ -28,8 +28,12 @@
 #include <socketcan_bridge/topic_to_socketcan.h>
 #include <socketcan_interface/string.h>
 #include <string>
+#include <string.h>
 #include <chrono>
 #include <ros/time.h>
+// #include <zmq.hpp>// 引入ZeroMQ库
+#include <iostream>
+// #include <zmqpp/zmqpp.hpp>// 引入ZeroMQ库
 
 namespace socketcan_bridge
 {
@@ -57,18 +61,19 @@ void TopicToSocketCAN::msgCallback(const can_msgs::Frame::ConstPtr& msg)
     // debug
     // std::cout<<m.header.stamp.nsec << std::endl;
     //debug end
-    std::chrono::nanoseconds ns(msg->header.stamp.nsec);
-    std::chrono::seconds s(msg->header.stamp.sec);
+    std::chrono::nanoseconds ns(m.header.stamp.nsec);
+    std::chrono::seconds s(m.header.stamp.sec);
     std::chrono::system_clock::time_point tp(s + ns);
+
+    //check chrono ture
+    // std::cout << "topic time s " << m.header.stamp.sec << " topic time ns " <<m.header.stamp.nsec << std::endl;
+    // std::cout << "systemtime s " <<s.count() << " systemtime ns " <<ns.count() << " add "<< tp.time_since_epoch().count()<<std::endl;
+    //check result ture
+
+    // std::cout << "time point: " << tp.time_since_epoch().count() << std::endl;
     // std::cout << "time point: " << tp.time_since_epoch().count() << std::endl;
 
-    std::chrono::nanoseconds nsec_tmp(ros::Time::now().nsec);
-    std::chrono::seconds sec_tmp(ros::Time::now().sec);
-    std::chrono::system_clock::time_point tp_new(nsec_tmp + sec_tmp);
-    std::chrono::duration<double> elapsed = tp_new - tp;
-    std::cout << "elapsed time: " << elapsed.count() << "s\n";
 
-    // converts the can_msgs::Frame (ROS msg) to can::Frame (socketcan.h)
     convertMessageToSocketCAN(m, f);
 
     if (!f.isValid())  // check if the id and flags are appropriate.
@@ -85,6 +90,23 @@ void TopicToSocketCAN::msgCallback(const can_msgs::Frame::ConstPtr& msg)
     {
         ROS_ERROR("Failed to send message: %s.", can::tostring(f, true).c_str());
     }
+    std::chrono::nanoseconds nsec_tmp(ros::Time::now().nsec);
+    std::chrono::seconds sec_tmp(ros::Time::now().sec);
+    std::chrono::system_clock::time_point tp_new(sec_tmp + nsec_tmp);
+    
+    //zmq to TCP or UDP port  for debug.
+    // zmqpp::context  context;
+    // zmqpp::socket socket(context, ZMQ_REQ);
+    // zmqpp::socket_type type = zmqpp::socket_type::reply;
+    // zmqpp::socket socket (context, type);
+    // socket.connect("tcp://localhost:1211");
+    // zmqpp::message topic_time_zmq,real_message_zmq;
+    // topic_time_zmq << tp_new.time_since_epoch().count();
+    // socket.send(topic_time_zmq);
+    //initialize
+    std::chrono::duration<double> elapsed = tp_new - tp;
+    // std::cout << "ros";
+    std::cout << "cmd_time" << "elapsed time: " << elapsed.count() << "s\n";
 }
 
 void TopicToSocketCAN::stateCallback(const can::State & s)
