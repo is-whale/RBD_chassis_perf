@@ -31,7 +31,7 @@
 #include <string.h>
 #include <chrono>
 #include <ros/time.h>
-// #include <zmq.hpp>// 引入ZeroMQ库
+// #include <zmq.hpp>// 引入ZeroMQ库 build error
 #include <iostream>
 // #include <zmqpp/zmqpp.hpp>// 引入ZeroMQ库
 
@@ -94,6 +94,18 @@ void TopicToSocketCAN::msgCallback(const can_msgs::Frame::ConstPtr& msg)
     std::chrono::seconds sec_tmp(ros::Time::now().sec);
     std::chrono::system_clock::time_point tp_new(sec_tmp + nsec_tmp);
     
+    //ros time start
+    // ros::Time topic_time_cmd = m.header.stamp;
+    // ros::Time topic_time_now = ros::Time::now();
+    // ros::Duration d = topic_time_now - topic_time_cmd;
+    // std::cout << "d.sec: " << d.sec << std::endl;
+    // double  d_result = d.toSec();
+    // double d_result_2 = d.sec + 1e-9*d.nsec;//the result is true.
+    // std::cout << " Data latency: " << d_result << std::endl;
+
+    // std::cout << " d.sec + d.nsec: " << (d.sec + d.nsec) << std::endl;
+    //rostime end
+
     //zmq to TCP or UDP port  for debug.
     // zmqpp::context  context;
     // zmqpp::socket socket(context, ZMQ_REQ);
@@ -104,9 +116,9 @@ void TopicToSocketCAN::msgCallback(const can_msgs::Frame::ConstPtr& msg)
     // topic_time_zmq << tp_new.time_since_epoch().count();
     // socket.send(topic_time_zmq);
     //initialize
-    std::chrono::duration<double> elapsed = tp_new - tp;
+    // std::chrono::duration<double> elapsed = tp_new - tp;
     // std::cout << "ros";
-    std::cout << "cmd_time" << "elapsed time: " << elapsed.count() << "s\n";
+    // std::cout << "cmd_time" << "elapsed time: " << elapsed.count() << "s\n";
 }
 
 void TopicToSocketCAN::stateCallback(const can::State & s)
