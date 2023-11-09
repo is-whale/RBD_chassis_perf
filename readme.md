@@ -15,6 +15,12 @@ CMD -> can_frame -> mux_can_fountion->sent_messages->can_frame
 - 3.优化互斥锁处理
 - 4.不同帧的CAN信息通过循环中的不同函数处理。
 
+优化前：
+![penv](./png/shit.jpg)
+
+优化后
+![now](./png/now.jpg)
+
 ### test cmd
 
  rostopic pub -r 10 /cmd_vel geometry_msgs/Twist "linear:
