@@ -1,5 +1,31 @@
 #	Intro
 **teemo_chasis** is a driver for use teemo chasis.
+---
+### 优化记录
+
+1.不同帧的CAN信息通过循环中的不同函数处理。
+
+2.CAN消息传递延时
+CMD -> can_frame -> mux_can_fountion->sent_messages->can_frame
+
+解决方案：
+修改解析方式，用互斥锁保证操作安全，延时从0.5~0.7缩小到0.0001~0.001
+
+TODO：
+1.根据需要的命令重写解析的心跳机制，可以进一步优化解析时间
+2.根据pub和sub频率以及callback执行时间，调整缓存区大小，提高实时性
+3.
+
+test cmd
+
+ rostopic pub -r 10 /cmd_vel geometry_msgs/Twist "linear:
+  x: 0.0
+  y: 0.0
+  z: 0.0
+angular:
+  x: 0.0
+  y: 0.0
+  z: 0.0" 
 
 ##  vehicle_can_socket
 The 'vehicle_can_socket' Package used to encode and decode vehicle CAN protocol.So it contains two major node below
