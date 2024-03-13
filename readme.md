@@ -1,5 +1,6 @@
 #	Intro
 ### 优化记录
+#### 数据流分析
 2.CAN消息传递
 CMD -> can_frame -> mux_can_fountion->sent_messages->can_frame
 ### 解决方案：
