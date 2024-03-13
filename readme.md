@@ -9,6 +9,7 @@ CMD -> can_frame -> mux_can_fountion->sent_messages->can_frame
 - 2.根据pub和sub频率以及callback执行时间，调整缓存区大小，提高实时性
 - 3.优化互斥锁处理
 - 4.不同帧的CAN信息通过循环中的不同函数处理。
+
 优化前：
 ![penv](./png/shit.jpg)
 优化后
